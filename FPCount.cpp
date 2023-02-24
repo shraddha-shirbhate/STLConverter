@@ -9,14 +9,15 @@
 #include <map>
 #include <algorithm>
 #include <string>
+#include <cmath>
 
 using namespace std;
 
 class GeomVector
 {
 public:
-    double x, y, z;
-    GeomVector(double x, double y, double z)
+    float x, y, z;
+    GeomVector(float x, float y, float z)
     {
         this->x = x;
         this->y = y;
@@ -24,13 +25,13 @@ public:
     };
 };
 
-/*
-class STL_Reader{
-
-};*/
+class STL_Reader
+{
+public:
+};
 
 vector<GeomVector> readStlFile(string inputFile)
-{   
+{
     vector<GeomVector> coordinates;
 
     int index = 0;
@@ -40,7 +41,7 @@ vector<GeomVector> readStlFile(string inputFile)
         string line;
         string vertex;
 
-        double x, y, z;
+        float x, y, z;
 
         while (getline(ifs, line))
         {
@@ -54,7 +55,6 @@ vector<GeomVector> readStlFile(string inputFile)
                 ss >> z;
                 index++;
                 GeomVector g(x, y, z);
-                // string coords =  to_string(x) + " " + to_string(y) + " " + to_string(z) + " ";
                 coordinates.push_back(g);
             }
             else
@@ -89,11 +89,22 @@ map<string, int> uniqueVertices(vector<GeomVector> vertices)
     return uniqueCoords;
 };
 
+bool cmp(pair<string, int>& a, pair<string, int>& b)
+{
+    return a.second < b.second;
+}
+
 void printUniqueVertices(map<string, int> printUniVertices)
 {
-    for (auto i : printUniVertices)
+    vector<pair<string, int> > A;
+    for (auto& it : printUniVertices) {
+        A.push_back(it);
+    }
+    sort(A.begin(), A.end(), cmp);
+
+    for (auto it : A)
     {
-        cout << "v " << i.first << endl;
+        cout << "v " << it.first << " " << it.second << endl;
     }
 };
 
@@ -131,8 +142,8 @@ int main()
     cout << "Number of triangles : " << vertices.size() / 3 << endl;
     map<string, int> uniquePoints = uniqueVertices(vertices);
     cout << "Count of Unique Vertices : " << uniquePoints.size() << endl;
-    //cout << "Print Unique Vertices : " << endl;
-    //printUniqueVertices(uniquePoints);
+    // cout << "Print Unique Vertices : " << endl;
+    printUniqueVertices(uniquePoints);
     cout << endl;
 
     auto t1 = chrono::system_clock::now();
@@ -148,10 +159,16 @@ int main()
     fileOBJ << "mtlib cube.mtl" << endl;
 
     map<string, int> OBJVertex = uniqueVertices(vertices);
-    for (auto ind : OBJVertex)
-    {
-        fileOBJ << "v " << ind.first << endl;
+    vector<pair<string, int> > A;
+    for (auto& it : OBJVertex) {
+        A.push_back(it);
     }
+    sort(A.begin(), A.end(), cmp);
+
+    for (auto it : A)
+    {
+        fileOBJ << "v " << it.first << endl;
+    }   
     fileOBJ << endl;
 
     auto t2 = chrono::system_clock::now();
@@ -176,6 +193,6 @@ int main()
     auto t3 = chrono::system_clock::now();
     elapsed = chrono::duration_cast<chrono::milliseconds>(t3 - t0);
     cout << "OBJ file written in " << elapsed.count() << " ms." << std::endl;
-    
+
     return 0;
 }
